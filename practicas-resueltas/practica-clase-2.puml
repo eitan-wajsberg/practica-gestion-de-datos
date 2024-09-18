@@ -1,0 +1,79 @@
+@startuml
+enum clientes {
+codCliente [PK]
+nombre
+apellido
+codPostal
+direccion
+ciudad
+direccion
+codProvincia [PK]
+cuit
+}
+
+clientes }|--|| provincias
+
+enum provincias {
+codProvincia [PK]
+nombre
+}
+
+enum llamados {
+idLlamado [PK]
+codCliente [FK]
+codTipoLlamado [FK]
+fecha
+duracion
+telefonoLlamado!!
+}
+
+llamados }|-up-|| tiposLlamado
+llamados }|--|| clientes
+
+enum tiposLlamado {
+codTipoLlamado [PK]
+descripcion
+}
+
+enum telefonos {
+codTelefono
+numeroTelefono
+codCliente [FK]
+}
+
+clientes ||--|{ telefonos
+
+enum facturas {
+numeroFactura [PK]
+codCliente [FK] [PK]
+fechaFactura
+fechaVencimiento
+}
+
+clientes ||--|{ facturas
+
+enum items {
+codFactura [FK] [PK]
+codProducto [FK] [PK]
+precioUnitario
+cantidad
+}
+
+items }|--|| productos
+items }|--|| facturas
+
+enum productos {
+codProducto [PK]
+nombre
+precioUnitario
+fabricante [FK]
+}
+
+productos }|--|| fabricantes
+
+enum fabricantes {
+codFabricante [PK]
+nombre
+tiempoEntregaPromedio
+}
+@enduml
