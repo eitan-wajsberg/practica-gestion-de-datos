@@ -191,9 +191,7 @@ Se desea obtener la cantidad de clientes por cada state y city, donde los client
 ```sql
 SELECT state, city, COUNT(customer_num) cantidad_clientes
 FROM customer
-WHERE company LIKE '%ts%' 
-	  AND zipcode BETWEEN 93000 AND 94100 
-	  AND city != 'Mountain View'
+WHERE company LIKE '%ts%' AND (zipcode BETWEEN 93000 AND 94100) AND city != 'Mountain View'
 GROUP BY state, city
 ORDER BY city;
 ```
@@ -204,8 +202,7 @@ Para cada estado, obtener la cantidad de clientes referidos. Mostrar sólo los c
 ```sql
 SELECT state, COUNT(customer_num) cantidad_clientes
 FROM customer
-WHERE company LIKE '[A-L]%'
-	  AND customer_num_referedBy IS NOT NULL
+WHERE company LIKE '[A-L]%' AND customer_num_referedBy IS NOT NULL
 GROUP BY state;
 ```
 
@@ -215,8 +212,7 @@ Se desea obtener el promedio de lead_time por cada estado, donde los Fabricantes
 ```sql
 SELECT state, AVG(lead_time)
 FROM manufact
-WHERE manu_name LIKE '%e%'
-	  AND lead_time BETWEEN 5 AND 20
+WHERE manu_name LIKE '%e%' AND lead_time BETWEEN 5 AND 20
 GROUP BY state;
 ```
 

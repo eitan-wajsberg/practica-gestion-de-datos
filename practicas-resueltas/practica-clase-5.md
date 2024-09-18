@@ -129,9 +129,7 @@ INNER JOIN manufact m ON(m.manu_code = i.manu_code)
 INNER JOIN product_types pt ON(pt.stock_num = i.stock_num)
 INNER JOIN orders o ON(o.order_num = i.order_num)
 GROUP BY m.manu_name, pt.description, m.manu_code, o.order_date, i.unit_price, i.quantity
-HAVING m.manu_code IN('ANZ', 'HRO', 'HSK', 'SMT')
-    AND YEAR(o.order_date) = 2015
-    AND MONTH(o.order_date) IN(05, 06)
+HAVING m.manu_code IN('ANZ', 'HRO', 'HSK', 'SMT') AND YEAR(o.order_date) = 2015 AND MONTH(o.order_date) IN(05, 06)
 ORDER BY monto_total_vendido DESC;
 ```
 
