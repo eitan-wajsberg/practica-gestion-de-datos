@@ -40,7 +40,11 @@ Número_de_Cliente Nombre Apellido
 -- a)
 SELECT c.customer_num, c.fname, c.lname
 FROM customer c
-WHERE (SELECT COUNT(*) FROM orders o WHERE o.customer_num = c.customer_num) > 1;
+WHERE (
+    SELECT COUNT(*) 
+    FROM orders o 
+    WHERE o.customer_num = c.customer_num
+) > 1;
 
 -- b)
 SELECT c.customer_num, c.fname, c.lname
@@ -59,40 +63,75 @@ Formato de la salida: Nro. de Orden Total
 SELECT i1.order_num, SUM(i1.unit_price*i1.quantity) monto_total
 FROM items i1 
 GROUP BY order_num
-HAVING SUM(unit_price*quantity) < (SELECT AVG(i2.quantity* i2.unit_price) FROM items i2); 
+HAVING SUM(unit_price*quantity) < (
+    SELECT AVG(i2.quantity* i2.unit_price) 
+    FROM items i2
+); 
 ```
 
 ## Ejercicio 5
-Obtener por cada fabricante, el listado de todos los productos de stock con precio
-unitario (unit_price) mayor que el precio unitario promedio de dicho fabricante.
-Los campos de salida serán: manu_code, manu_name, stock_num, description, unit_price.
+Obtener por cada fabricante, el listado de todos los productos de stock conprecio unitario (unit_price) mayor que el precio unitario promedio de dicho fabricante. Los campos de salida serán: manu_code, manu_name, stock_num, description, unit_price.
 
 ```sql
-SELECT m.manu_code, m.manu_name, p.stock_num, pt.description, p.unit_price
-FROM products p 
-INNER JOIN
+SELECT m.manu_code, m.manu_name, p1.stock_num, pt.description, p1.unit_price
+FROM products p1 
+INNER JOIN manufact m ON(m.manu_code = p1.manu_code)
+INNER JOIN product_types pt ON(pt.stock_num = p1.stock_num)
+WHERE unit_price > (
+    SELECT AVG(unit_price) 
+    FROM products p2 
+    WHERE p1.manu_code = p2.manu_code
+);
 ```
 
 ## Ejercicio 6
-Usando el operador NOT EXISTS listar la información de órdenes de compra que NO
-incluyan ningún producto que contenga en su descripción el string ‘ baseball gloves’. Ordenar el resultado por compañía del cliente ascendente y número de orden
-descendente. El formato de salida deberá ser:
+Usando el operador NOT EXISTS listar la información de órdenes de compra que NO incluyan ningún producto que contenga en su descripción el string ‘ baseball gloves’. Ordenar el resultado por compañía del cliente ascendente y número de orden descendente. El formato de salida deberá ser:
 Número de Cliente Compañía Número de Orden Fecha de la Orden
 (customer_num) (company) (order_num) (order_date)
 
 ```sql
+SELECT c.customer_num, c.company, o.order_num, o.order_date
+FROM orders o
+INNER JOIN customer c ON(c.customer_num = o.customer_num)
+INNER JOIN items i ON(i.order_num = o.order_num)
+WHERE NOT EXISTS (
+    SELECT pt.description 
+    FROM product_types pt 
+    WHERE pt.description LIKE '%baseball gloves%' AND pt.stock_num = i.stock_num
+)
+ORDER BY c.company ASC, o.order_num DESC;
 ```
 
 ## Ejercicio 7
 Obtener el número, nombre y apellido de los clientes que NO hayan comprado productos del fabricante ‘HSK’.
 
 ```sql
+SELECT c.customer_num, c.fname, c.lname
+FROM customer c 
+WHERE NOT EXISTS (
+    SELECT i.manu_code, o.customer_num
+    FROM orders o
+    INNER JOIN items i ON(i.order_num = o.order_num) 
+    WHERE manu_code = 'HSK' AND o.customer_num = c.customer_num
+);
 ```
 
 ## Ejercicio 8
 Obtener el número, nombre y apellido de los clientes que hayan comprado TODOS los productos del fabricante ‘HSK’.
-
+REVISAR!!!
 ```sql
+SELECT c.customer_num, c.fname, c.lname
+FROM customer c 
+WHERE NOT EXISTS (
+    SELECT p.stock_num
+    FROM products p
+    WHERE p.manu_code = 'HSK' AND NOT EXISTS (
+        SELECT o.order_num
+        FROM orders o 
+        INNER JOIN items i ON i.order_num = o.order_num
+        WHERE o.customer_num = c.customer_num AND i.stock_num = p.stock_num
+    )
+);
 ```
 
 ## Ejercicio 9
@@ -100,14 +139,28 @@ Reescribir la siguiente consulta utilizando el operador UNION:
 SELECT * FROM products WHERE manu_code = ‘HRO’ OR stock_num = 1
 
 ```sql
+SELECT * FROM products WHERE manu_code = 'HRO'
+UNION 
+SELECT * FROM products WHERE stock_num = 1;
 ```
 
 ## Ejercicio 10
-Desarrollar una consulta que devuelva las ciudades y compañías de todos los Clientes ordenadas alfabéticamente por Ciudad pero en la consulta deberán aparecer primero las compañías situadas en Redwood City y luego las demás.
+Desarrollar una consulta que devuelva las ciudades y compañías de todos los Clientes ordenadas alfabéticamente por Ciudad pero en la consulta deberán aparecer primero las compañías situadas en Redwood City y luego las demás. 
 Formato: Clave de ordenamiento Ciudad Compañía
 (sortkey) (city) (company)
 
 ```sql
+SELECT city, company, 0 clave_ordenamiento
+FROM customer
+WHERE city = 'Redwood City'
+
+UNION
+
+SELECT city, company, 1 clave_ordenamiento
+FROM customer
+WHERE city <> 'Redwood City'
+
+ORDER BY clave_ordenamiento, city, company;
 ```
 
 ## Ejercicio 11
