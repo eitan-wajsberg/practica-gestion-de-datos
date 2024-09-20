@@ -7,8 +7,7 @@ Mostrar el Código del fabricante, nombre del fabricante, tiempo de entrega y mo
 
 ```sql
 SELECT m.manu_code, m.manu_name, m.lead_time, SUM(i.quantity * i.unit_price) monto_total
-FROM manufact m
-LEFT JOIN items i ON(i.manu_code = m.manu_code)
+FROM manufact m LEFT JOIN items i ON(i.manu_code = m.manu_code)
 GROUP BY m.manu_code, m.manu_name, m.lead_time
 ORDER BY m.manu_name;
 ```
@@ -18,26 +17,25 @@ Mostrar en una lista de a pares, el código y descripción del producto, y los p
 Nro. de Producto Descripcion Cód. de fabric. 1 Cód. de fabric. 2
 (stock_num) (Description) (manu_code) (manu_code)
 
-REVISAR!
 ```sql
 SELECT p1.stock_num, pt.description, p1.manu_code cod_fabricante_1, p2.manu_code cod_fabricante_2
 FROM products p1
-LEFT JOIN products p2 ON(p1.stock_num = p2.stock_num AND p1.manu_code != p2.manu_code)
-INNER JOIN product_types pt ON(pt.stock_num = p1.stock_num)
+    LEFT JOIN products p2 ON(p1.stock_num = p2.stock_num AND p1.manu_code != p2.manu_code)
+    INNER JOIN product_types pt ON(pt.stock_num = p1.stock_num)
 WHERE p1.manu_code < p2.manu_code OR p2.manu_code IS NULL
 ORDER BY p1.stock_num;
 ```
 
 ## Ejercicio 3
 Listar todos los clientes que hayan tenido más de una orden.
-a) En primer lugar, escribir una consulta usando una subconsulta.
-b) Reescribir la consulta utilizando GROUP BY y HAVING.
+1. En primer lugar, escribir una consulta usando una subconsulta.
+2. Reescribir la consulta utilizando GROUP BY y HAVING.
 La consulta deberá tener el siguiente formato:
 Número_de_Cliente Nombre Apellido
 (customer_num) (fname) (lname)
 
 ```sql
--- a)
+-- 1)
 SELECT c.customer_num, c.fname, c.lname
 FROM customer c
 WHERE (
@@ -46,10 +44,9 @@ WHERE (
     WHERE o.customer_num = c.customer_num
 ) > 1;
 
--- b)
+-- 2)
 SELECT c.customer_num, c.fname, c.lname
-FROM orders o
-INNER JOIN customer c ON(c.customer_num = o.customer_num)
+FROM orders o INNER JOIN customer c ON(c.customer_num = o.customer_num)
 GROUP BY c.customer_num, c.fname, c.lname
 HAVING COUNT(o.customer_num) > 1;
 ```
@@ -75,8 +72,8 @@ Obtener por cada fabricante, el listado de todos los productos de stock conpreci
 ```sql
 SELECT m.manu_code, m.manu_name, p1.stock_num, pt.description, p1.unit_price
 FROM products p1 
-INNER JOIN manufact m ON(m.manu_code = p1.manu_code)
-INNER JOIN product_types pt ON(pt.stock_num = p1.stock_num)
+    INNER JOIN manufact m ON(m.manu_code = p1.manu_code)
+    INNER JOIN product_types pt ON(pt.stock_num = p1.stock_num)
 WHERE unit_price > (
     SELECT AVG(unit_price) 
     FROM products p2 
@@ -91,12 +88,10 @@ Número de Cliente Compañía Número de Orden Fecha de la Orden
 
 ```sql
 SELECT c.customer_num, c.company, o.order_num, o.order_date
-FROM orders o
-INNER JOIN customer c ON(c.customer_num = o.customer_num)
-INNER JOIN items i ON(i.order_num = o.order_num)
+FROM orders o INNER JOIN customer c ON(c.customer_num = o.customer_num)
 WHERE NOT EXISTS (
     SELECT pt.description 
-    FROM product_types pt 
+    FROM product_types pt INNER JOIN items i ON(i.order_num = o.order_num)
     WHERE pt.description LIKE '%baseball gloves%' AND pt.stock_num = i.stock_num
 )
 ORDER BY c.company ASC, o.order_num DESC;
@@ -110,8 +105,7 @@ SELECT c.customer_num, c.fname, c.lname
 FROM customer c 
 WHERE NOT EXISTS (
     SELECT i.manu_code, o.customer_num
-    FROM orders o
-    INNER JOIN items i ON(i.order_num = o.order_num) 
+    FROM orders o INNER JOIN items i ON(i.order_num = o.order_num) 
     WHERE manu_code = 'HSK' AND o.customer_num = c.customer_num
 );
 ```
@@ -127,9 +121,8 @@ WHERE NOT EXISTS (
     FROM products p
     WHERE p.manu_code = 'HSK' AND NOT EXISTS (
         SELECT o.order_num
-        FROM orders o 
-        INNER JOIN items i ON i.order_num = o.order_num
-        WHERE o.customer_num = c.customer_num AND i.stock_num = p.stock_num
+        FROM orders o INNER JOIN items i ON(i.order_num = o.order_num)
+        WHERE o.customer_num = c.customer_num AND i.stock_num = p.stock_num AND p.manu_code = i.manu_code
     )
 );
 ```
@@ -153,13 +146,10 @@ Formato: Clave de ordenamiento Ciudad Compañía
 SELECT city, company, 0 clave_ordenamiento
 FROM customer
 WHERE city = 'Redwood City'
-
 UNION
-
 SELECT city, company, 1 clave_ordenamiento
 FROM customer
-WHERE city <> 'Redwood City'
-
+WHERE city != 'Redwood City'
 ORDER BY clave_ordenamiento, city, company;
 ```
 
@@ -168,6 +158,26 @@ Desarrollar una consulta que devuelva los dos tipos de productos más vendidos y
 Formato
 
 ```sql
+SELECT i1.stock_num, SUM(i1.quantity) unidades_totales
+FROM items i1
+WHERE i1.stock_num IN (
+    SELECT TOP 2 i2.stock_num
+    FROM items i2 
+    GROUP BY i2.stock_num
+    ORDER BY SUM(i2.quantity) DESC
+)
+GROUP BY i1.stock_num
+UNION
+SELECT i1.stock_num, SUM(i1.quantity) unidades_totales
+FROM items i1
+WHERE i1.stock_num IN (
+    SELECT TOP 2 i2.stock_num
+    FROM items i2 
+    GROUP BY i2.stock_num
+    ORDER BY SUM(i2.quantity) ASC
+)
+GROUP BY i1.stock_num
+ORDER BY SUM(i1.quantity) DESC;
 ```
 
 
@@ -175,15 +185,71 @@ Formato
 Crear una Vista llamada ClientesConMultiplesOrdenes basada en la consulta realizada en el punto 3.b con los nombres de atributos solicitados en dicho punto.
 
 ```sql
+CREATE VIEW ClientesConMultiplesOrdenes 
+(nro_cliente, nombre, apellido) AS 
+SELECT c.customer_num, c.fname, c.lname
+FROM orders o INNER JOIN customer c ON(c.customer_num = o.customer_num)
+GROUP BY c.customer_num, c.fname, c.lname
+HAVING COUNT(o.customer_num) > 1;
 ```
 
 ## Ejercicio 13
-Crear una Vista llamada Productos_HRO en base a la consulta
-SELECT * FROM products WHERE manu_code = “HRO” La vista deberá restringir la posibilidad de insertar datos que no cumplan con su criterio de
-selección.
+Crear una Vista llamada Productos_HRO en base a la consulta SELECT * FROM products WHERE manu_code = “HRO”. La vista deberá restringir la posibilidad de insertar datos que no cumplan con su criterio de selección.
 a. Realizar un INSERT de un Producto con manu_code=’ANZ’ y stock_num=303. Qué sucede?
 b. Realizar un INSERT con manu_code=’HRO’ y stock_num=303. Qué sucede?
 c. Validar los datos insertados a través de la vista.
 
 ```sql
+CREATE VIEW Productos_HRO AS
+SELECT * FROM products WHERE manu_code = 'HRO'
+WITH CHECK OPTION;
+
+-- a) Realizar el INSERT no es posible, ya que se utilizo la clausula WITH CHECK OPTION. Error: The attempted insert or update failed because the target view either specifies WITH CHECK OPTION or spans a view that specifies WITH CHECK OPTION and one or more rows resulting from the operation did not qualify under the CHECK OPTION constraint.
+
+-- b) Realizar el INSERT es posible y se inserta en la tabla de productos y puede ser verificado tambien en la vista.
+```
+
+## Ejercicio 14
+Escriba una transacción que incluya las siguientes acciones:
+1. BEGIN TRANSACTION.
+    - Insertar un nuevo cliente llamado “Fred Flintstone” en la tabla de clientes (customer).
+    - Seleccionar todos los clientes llamados Fred de la tabla de clientes (customer).
+2. ROLLBACK TRANSACTION.
+
+Luego volver a ejecutar la consulta:
+1. Seleccionar todos los clientes llamados Fred de la tabla de clientes (customer).
+2. Completado el ejercicio descripto arriba. Observar que los resultados del segundo SELECT difieren con respecto al primero.
+
+```sql
+BEGIN TRANSACTION
+INSERT INTO customer (customer_num, fname, lname) VALUES (129, 'Fred', 'Flintstone');
+SELECT * 
+FROM customer 
+WHERE fname = 'Fred';
+ROLLBACK TRANSACTION;
+
+SELECT * 
+FROM customer 
+WHERE fname = 'Fred';
+-- Los dos selects difieren. En el primero figura el registro creado de Fred Flintstone, pero en el segundo no, ya que se hizo rollback.
+```
+
+## Ejercicio 15
+Se ha decidido crear un nuevo fabricante AZZ, quién proveerá parte de los mismos productos que provee el fabricante ANZ, los productos serán los que contengan el string ‘tennis’ en su descripción.
+1. Agregar las nuevas filas en la tabla manufact y la tabla products.
+2. El código del nuevo fabricante será “AZZ”, el nombre de la compañía “AZZIO SA” y el tiempo de envío será de 5 días (lead_time).
+3. La información del nuevo fabricante “AZZ” de la tabla Products será la misma que la del fabricante “ANZ” pero sólo para los productos que contengan 'tennis' en su descripción.
+4. Tener en cuenta las restricciones de integridad referencial existentes, manejar todo dentro de una misma transacción.
+
+```sql
+BEGIN TRANSACTION
+INSERT INTO manufact (manu_code, manu_name, lead_time) VALUES ('AZZ', 'AZZIO SA', 5); 
+INSERT INTO products (p.stock_num, p.manu_code, p.unit_price, p.unit_code, p.status)
+    SELECT p.stock_num, 'AZZ', p.unit_price, p.unit_code, p.status
+    FROM products p INNER JOIN product_types pt ON(pt.stock_num = p.stock_num)
+    WHERE pt.description LIKE '%tennis%' AND p.manu_code = 'ANZ';
+COMMIT;
+
+SELECT * FROM products WHERE manu_code = 'ANZ';
+SELECT * FROM products WHERE manu_code = 'AZZ';
 ```

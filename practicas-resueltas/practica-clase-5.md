@@ -7,8 +7,7 @@ Obtener el número de cliente, la compañía, y número de orden de todos los cl
 
 ```sql
 SELECT c.customer_num, c.company, o.order_num
-FROM orders o 
-    INNER JOIN customer c ON (c.customer_num = o.customer_num)
+FROM orders o INNER JOIN customer c ON (c.customer_num = o.customer_num)
 ORDER BY customer_num;
 ```
 
@@ -18,8 +17,7 @@ contener: Número de orden (order_num), Número de Item (item_num), Descripción
 
 ```sql
 SELECT i.order_num, i.item_num, pt.description, i.manu_code, i.quantity, (i.unit_price*i.quantity) precio_total   
-FROM items i
-    INNER JOIN product_types pt ON (pt.stock_num = i.stock_num)
+FROM items i INNER JOIN product_types pt ON (pt.stock_num = i.stock_num)
 WHERE i.order_num = 1004;
 ```
 
@@ -39,8 +37,7 @@ Se desea listar todos los clientes que posean órdenes de compra. Los datos a li
 
 ```sql
 SELECT DISTINCT o.order_num, c.customer_num, c.fname, c.lname, c.company
-FROM customer c
-    INNER JOIN orders o ON(o.customer_num = c.customer_num); 
+FROM customer c INNER JOIN orders o ON(o.customer_num = c.customer_num); 
 ```
 
 ## Ejercicio 5
@@ -48,8 +45,7 @@ Se desea listar todos los clientes que posean órdenes de compra. Los datos a li
 
 ```sql
 SELECT DISTINCT c.customer_num, c.fname, c.lname, c.company
-FROM customer c
-INNER JOIN orders o ON(o.customer_num = c.customer_num);
+FROM customer c INNER JOIN orders o ON(o.customer_num = c.customer_num);
 ```
 
 ## Ejercicio 6
@@ -68,8 +64,7 @@ Se requiere un listado de los items de la orden de pedido Nro. 1004 con los sigu
 
 ```sql
 SELECT i.item_num, pt.description, i.quantity, (i.unit_price*i.quantity) precio_total
-FROM items i
-    INNER JOIN product_types pt ON (pt.stock_num = i.stock_num)
+FROM items i INNER JOIN product_types pt ON (pt.stock_num = i.stock_num)
 WHERE i.order_num = 1004;
 ```
 
@@ -140,8 +135,7 @@ Emitir un reporte con la cantidad de unidades vendidas y el importe total por me
 
 ```sql
 SELECT FORMAT(o.order_date, 'yyyy/MM'), SUM(i.quantity) cantidad_unidades_vendidas, SUM(quantity*unit_price) importe_total
-FROM items i
-    INNER JOIN orders o ON(o.order_num = i.order_num)
+FROM items i INNER JOIN orders o ON(o.order_num = i.order_num)
 GROUP BY FORMAT(o.order_date, 'yyyy/MM')
 ORDER BY importe_total DESC;
 ```
