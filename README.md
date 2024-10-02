@@ -1,5 +1,5 @@
 # Práctica de Gestión de Datos
-Este repositorio contiene la práctica realizada para la asignatura Gestión de Datos de la Universidad Tecnológica Nacional (UTN FRBA).
+Este repositorio contiene la práctica realizada para la asignatura Gestión de Datos de la Universidad Tecnológica Nacional (UTN FRBA) en el segundo cuatrimestro del año 2024.
 
 ## Guías resueltas
 - Clase 1: [***Algebra relacional***](<practicas-resueltas/practica-clase-1.md>)
