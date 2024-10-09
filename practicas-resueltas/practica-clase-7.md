@@ -111,54 +111,57 @@ Crear un procedimiento ‘actualizaPrecios’ que reciba como parámetros manu_c
 - El procedimiento deberá contemplar todas las operaciones de cada fabricante como un lote, en el caso que ocurra un error, se deberá informar el error ocurrido y deshacer la operación de ese fabricante.
 
 ```sql
-CREATE PROCEDURE actualizarPrecios(@manu_codeDES CHAR(3), @manu_codeHAS CHAR(3), @porcActualizacion DECIMAL(5,3))
+ALTER PROCEDURE actualizarPrecios @manu_codeDES CHAR(3), @manu_codeHAS CHAR(3), @porcActualizacion DECIMAL (5,3)
 AS
 BEGIN
-	DECLARE cursor_precios CURSOR FOR 
-		SELECT p.manu_code, SUM(i.quantity) cantidad_comprada
-		FROM products p
-			INNER JOIN items i ON(i.stock_num = p.stock_num AND i.manu_code = i.manu_code)
-		WHERE p.manu_code BETWEEN @manu_codeDES AND @manu_codeHAS
-		GROUP BY p.manu_code
-	
-	DECLARE @manu_code CHAR(3);
-	DECLARE @cantidad_comprada INT;
-	
-	BEGIN TRANSACTION
-		BEGIN TRY
-			OPEN cursor_precios;
-			FETCH cursor_precios INTO @manu_code, @cantidad_comprada;
-			WHILE (@@FETCH_STATUS = 0)
-				BEGIN
-					IF @cantidad_comprada >= 500
-						BEGIN
-							INSERT INTO listaPrecioMayor SELECT stock_num, @manu_code, unit_price * (1 + @porcActualizacion * 0.80), unit_code FROM products WHERE manu_code=@manu_code;							
-						END;
-						
-					ELSE IF @cantidad_comprada < 500
-						BEGIN
-							INSERT INTO listaPrecioMenor SELECT stock_num, @manu_code, unit_price * (1 + @porcActualizacion), unit_code FROM products WHERE manu_code=@manu_code;
-						END;
-					
-					UPDATE products SET status='A' WHERE manu_code = @manu_code;
-					FETCH cursor_precios INTO @manu_code, @cantidad_comprada;
-				END;
-			COMMIT;
-		END TRY
+	DECLARE @stock_num INT, @manu_code CHAR(3), @unit_price DECIMAL(6,2), @unit_code SMALLINT, @manu_codeAux CHAR(3)
 
-		BEGIN CATCH
-			PRINT 'Numero error: ' + CAST(ERROR_NUMBER() AS VARCHAR);
-			PRINT 'Mensaje: ' + ERROR_MESSAGE();
-			ROLLBACK;
-		END CATCH;
+	DECLARE StockCursor CURSOR FOR
+		SELECT p.stock_num, manu_code, unit_price, unit_code
+		FROM products p
+		WHERE manu_code BETWEEN @manu_codeDES AND @manu_codeHAS
+		ORDER BY manu_code, p.stock_num
+
+	OPEN StockCursor;
+	FETCH NEXT FROM StockCursor INTO @stock_num, @manu_code, @unit_price, @unit_code
 	
-		CLOSE cursor_precios;
-		DEALLOCATE cursor_precios;
+	SET @manu_codeAux = @manu_code
+	WHILE @@FETCH_STATUS = 0
+		BEGIN
+			BEGIN TRY
+				BEGIN TRANSACTION
+				IF (SELECT SUM(quantity) FROM items WHERE manu_code = @manu_code AND stock_num=@stock_num) >= 500
+					INSERT INTO listaPrecioMayor VALUES (@stock_num, @manu_code, @unit_price * (1 + @porcActualizacion * 0.80), @unit_code);
+				ELSE
+					INSERT INTO listaPrecioMenor VALUES (@stock_num, @manu_code, @unit_price * (1 + @porcActualizacion), @unit_code);
+						
+						
+				UPDATE products SET status= 'A' WHERE manu_code = @manu_code AND stock_num = @stock_num;
+
+				FETCH NEXT FROM StockCursor INTO @stock_num, @manu_code, @unit_price, @unit_code
+						
+				IF @manu_code != @manu_codeAux AND @manu_code IS NOT NULL
+					BEGIN
+						COMMIT TRANSACTION
+						SET @manu_codeAux = @manu_code
+					END
+			END TRY
+			
+			BEGIN CATCH
+				ROLLBACK TRANSACTION
+				DECLARE @errorDescripcion VARCHAR(100)
+				SELECT @errorDescripcion = 'Error en Fabricante ' + @manu_code
+				RAISERROR(@errorDescripcion,14,1)
+			END CATCH
+		END;
+
+	CLOSE StockCursor
+	DEALLOCATE StockCursor
 END;
 
 DROP PROCEDURE actualizarPrecios;
 
-EXECUTE actualizaPrecios 'aaa', 'ZZZ', 30;
+EXECUTE actualizarPrecios 'aaa', 'ZZZ', 30.5;
 
 SELECT * FROM listaPrecioMayor;
 SELECT * FROM listaPrecioMenor;
@@ -174,6 +177,42 @@ Si el cliente pertenece al estado de California el día de la semana debe devolv
 Nota: `SET @DIA = datepart(weekday, @fecha)` devuelve en la variable @DIA el nro. de día de la semana, comenzando con 1 Domingo hasta 7 Sábado.
 
 ```sql
+SELECT order_num, order_date, c.state, dbo.diaSegunEstado(c.state, order_date) dia
+FROM orders o INNER JOIN customer c ON o.customer_num = c.customer_num
+WHERE paid_date IS NULL;
+
+
+CREATE FUNCTION diaSegunEstado(@estado CHAR(2), @fecha DATE)
+RETURNS VARCHAR(12)
+AS 
+BEGIN
+    DECLARE @resultado VARCHAR(12);
+    
+    IF @estado = 'CA'
+        SET @resultado = DATENAME(weekday, @fecha);
+  
+    ELSE
+        SET @resultado = dbo.diaSegunNumero(DATEPART(weekday, @fecha));
+    
+    RETURN @resultado;
+END;
+
+
+CREATE FUNCTION diaSegunNumero(@numero INT)
+RETURNS VARCHAR(12)
+AS 
+BEGIN
+	RETURN 
+		CASE @numero
+			WHEN 1 THEN 'Domingo'
+			WHEN 2 THEN 'Lunes'
+			WHEN 3 THEN 'Martes'
+			WHEN 4 THEN 'Miércoles'
+			WHEN 5 THEN 'Jueves'
+			WHEN 6 THEN 'Viernes'
+			WHEN 7 THEN 'Sábado'
+		END;
+END;
 ```
 
 ### Ejercicio 2
@@ -184,12 +223,102 @@ Cliente: NNNN; Año y mes mayor carga: YYYY - Total: NNNN.NN; Segundo año mayor
 La primera columna es el id de cliente y las siguientes 2 se refieren a los campos ship_date y ship_charge. Se requiere crear una función que devuelva la información de 1er o 2do año mes con la orden con mayor Carga (ship_charge).
 
 ```sql
+SELECT DISTINCT customer_num, dbo.mesConCargasMayores(1, customer_num), dbo.mesConCargasMayores(2, customer_num)
+FROM orders o1
+WHERE EXISTS (
+	SELECT 1 
+	FROM orders o2 
+	WHERE o2.customer_num = o1.customer_num AND MONTH(o1.order_date) > MONTH(o2.order_date)
+)
+
+ALTER FUNCTION mesConCargasMayores(@ORDEN SMALLINT, @CLIENTE INT)
+RETURNS VARCHAR(100)
+AS
+BEGIN
+	DECLARE @MES VARCHAR(4)
+	DECLARE @CARGA VARCHAR(50)
+	DECLARE @RETORNO VARCHAR(100)
+	
+	IF @ORDEN = 1
+	BEGIN
+		SELECT TOP 1 @MES = DATENAME(month, order_date), @CARGA = MAX(ship_charge)
+		FROM orders
+		WHERE customer_num = @CLIENTE
+		GROUP BY order_date, ship_charge
+		ORDER BY ship_charge DESC
+		
+		SET @RETORNO = @MES + ' - Total: ' + @CARGA
+	END
+
+	ELSE
+	BEGIN
+		SELECT TOP 1 @MES = order_date, @CARGA = COALESCE(ship_charge, 0)
+		FROM (
+			SELECT TOP 2 DATENAME(month, order_date) order_date, MAX(ship_charge) ship_charge
+			FROM orders
+			WHERE customer_num = @CLIENTE
+			GROUP BY order_date, ship_charge
+			ORDER BY 2 DESC
+		) as SQL1
+		ORDER BY ship_charge ASC
+
+		SET @RETORNO = @MES + ' - Total: ' + @CARGA
+	END
+	
+	RETURN @RETORNO
+END
 ```
 
 ### Ejercicio 3
-Escribir un Select que devuelva para cada producto de la tabla Products que exista en la tabla Catalog todos sus fabricantes separados entre sí por el caracter pipe (|). Utilizar una función para resolver parte de la consulta.
+Escribir un SELECT que devuelva para cada producto de la tabla products que exista en la tabla catalog todos sus fabricantes separados entre sí por el caracter pipe (|). Utilizar una función para resolver parte de la consulta.
 Ejemplo de la salida: 
 Stock_num: 5; Fabricantes: NRG | SMT | ANZ
 
 ```sql
+SELECT DISTINCT stock_num, dbo.fabricantesDeProducto(stock_num) fabricantes
+FROM catalog
+
+ALTER FUNCTION fabricantesDeProducto(@stock_num SMALLINT)
+RETURNS VARCHAR(100) 
+AS 
+BEGIN
+	DECLARE @resultado VARCHAR(100), @manu_code CHAR(3)
+
+	DECLARE fabricantesCursor CURSOR FOR 
+		SELECT DISTINCT manu_code
+		FROM catalog
+		WHERE stock_num = @stock_num
+
+	OPEN fabricantesCursor;
+	FETCH NEXT FROM fabricantesCursor INTO @manu_code
+
+	SET @resultado = ''
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @resultado += @manu_code
+		FETCH NEXT FROM fabricantesCursor INTO @manu_code
+		IF @@FETCH_STATUS = 0
+			SET @resultado += ' | '
+	END
+	CLOSE fabricantesCursor
+	DEALLOCATE fabricantesCursor
+
+	RETURN @resultado
+END
+
+
+-- Otra alternativa mas corta para resolver la funcion
+
+ALTER FUNCTION fabricantesDeProducto(@stock_num SMALLINT)
+RETURNS VARCHAR(100)
+AS 
+BEGIN
+    DECLARE @resultado VARCHAR(100);
+
+    SELECT @resultado = STRING_AGG(manu_code, ' | ')
+    FROM catalog
+    WHERE stock_num = @stock_num;
+
+    RETURN @resultado;
+END
 ```
