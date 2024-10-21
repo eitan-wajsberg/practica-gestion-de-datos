@@ -10,4 +10,4 @@ Este repositorio contiene la práctica realizada para la asignatura Gestión de 
 - Clase 6: [***Subqueries, índices y operaciones de conjuntos***](<practicas-resueltas/practica-clase-6.md>)
 - Clase 7: [***Procedures & Functions***](<practicas-resueltas/practica-clase-7.md>)
 - Clase 8: [***Triggers I***](<practicas-resueltas/practica-clase-8.md>)
-- Clase 9: [***Triggers II***](<practicas-resueltas/practica-clase-8.md>)
+- Clase 9: [***Triggers II***](<practicas-resueltas/practica-clase-9.md>)
