@@ -4,10 +4,25 @@ Práctica realizada el día 23 de Octubre del 2024 para la decima clase de Gesti
 
 ## Ejercicio 1
 Crear una vista que devuelva:
-- Código y Nombre (manu_code,manu_name) de los fabricante, posean o no productos (en tabla Products), cantidad de productos que fabrican (cant_producto) y la fecha de la última OC que contenga un producto suyo (ult_fecha_orden). De los fabricantes que fabriquen productos sólo se podrán mostrar los que fabriquen más de 2 productos.  No se permite utilizar funciones definidas por usuario, ni tablas temporales, ni UNION.
+- Código y Nombre (manu_code, manu_name) de los fabricante, posean o no productos (en tabla Products), cantidad de productos que fabrican (cant_producto) y la fecha de la última OC que contenga un producto suyo (ult_fecha_orden). De los fabricantes que fabriquen productos sólo se podrán mostrar los que fabriquen más de 2 productos. No se permite utilizar funciones definidas por usuario, ni tablas temporales, ni UNION.
 - Realizar una consulta sobre la vista que devuelva manu_code, manu_name, cant_producto y si el campo ult_fecha_orden posee un NULL informar ‘No Posee Órdenes’ si no posee NULL informar el valor de dicho campo. No se puede utilizar UNION para el SELECT.
 
 ```sql
+ALTER VIEW vistaProductosFabricantes AS
+SELECT 
+    m.manu_code, m.manu_name, COUNT(p.stock_num) cant_productos, (
+        SELECT MAX(order_date) 
+        FROM orders o INNER JOIN items i ON i.order_num = o.order_num
+        WHERE manu_code = m.manu_code
+    ) ult_fecha_orden
+FROM manufact m LEFT JOIN products p ON m.manu_code = p.manu_code
+GROUP BY m.manu_code, m.manu_name
+HAVING COUNT(p.stock_num) = 0 OR COUNT(p.stock_num) > 2;
+
+SELECT 
+    manu_code, manu_name, cant_productos, 
+    ISNULL(CAST(ult_fecha_orden AS VARCHAR), 'No Posee Órdenes') ult_fecha_orden
+FROM vistaProductosFabricantes;
 ```
 
 ## Ejercicio 2
@@ -15,6 +30,14 @@ Desarrollar una consulta ABC de fabricantes que:
 Liste el código y nombre del fabricante, la cantidad de órdenes de compra que contengan sus productos y la monto total de los productos vendidos. Mostrar sólo los fabricantes cuyo código comience con A ó con N y posea 3 letras, y los productos cuya descripción posean el string “tennis” ó el string “ball” en cualquier parte del nombre y cuyo monto total vendido sea mayor que el total de ventas promedio de todos los fabricantes (Cantidad * precio unitario / Cantidad de fabricantes que vendieron sus productos). Mostrar los registros ordenados por monto total vendido de mayor a menor.
 
 ```sql
+SELECT m.manu_code, m.manu_name, COUNT(p.stock_num) cant_productos, SUM(i.unit_price * i.quantity) monto_total
+FROM manufact m 
+    INNER JOIN items i ON m.manu_code = i.manu_code
+    INNER JOIN products p ON m.stock_num = i.stock_num
+    INNER JOIN product_types ON pt.stock_num = p.stock_num
+WHERE (m.manu_code LIKE 'A%' OR m.manu_code LIKE 'N%') AND SIZE(m.manu_code) > 3 AND  
+
+-- TODO: TERMINAR
 ```
 
 
@@ -36,7 +59,7 @@ Crear una consulta que devuelva los 5 primeros estados y el tipo de producto (de
 ## Ejercicio 5
 Crear una vista que devuelva:
 - Código y Nombre (manu_code,manu_name) de los fabricante, posean o no productos (en tabla Products), cantidad de productos que fabrican (cant_producto) y la fecha de la última OC que contenga un producto suyo (ult_fecha_orden). De los fabricantes que fabriquen productos sólo se podrán mostrar los que fabriquen más de 2 productos. No se permite utilizar funciones definidas por usuario, ni tablas temporales, ni UNION.
-- Realizar una consulta sobre la vista que devuelva manu_code, manu_name, cant_producto y si el campo ult_fecha_orden posee un NULL informar ‘No Posee Órdenes’ si no posee NULL informar el valor de dicho campo.  No se puede utilizar UNION para el SELECT.
+- Realizar una consulta sobre la vista que devuelva manu_code, manu_name, cant_producto y si el campo ult_fecha_orden posee un NULL informar ‘No Posee Órdenes’ si no posee NULL informar el valor de dicho campo. No se puede utilizar UNION para el SELECT.
 
 ```sql
 ```
@@ -45,7 +68,7 @@ Crear una vista que devuelva:
 ## Ejercicio 6
 Crear una vista que devuelva:
 - Código y Nombre (manu_code,manu_name) de los fabricante, posean o no productos (en tabla Products), cantidad de productos que fabrican (cant_producto) y la fecha de la última OC que contenga un producto suyo (ult_fecha_orden). De los fabricantes que fabriquen productos sólo se podrán mostrar los que fabriquen más de 2 productos.  No se permite utilizar funciones definidas por usuario, ni tablas temporales, ni UNION.
-- Realizar una consulta sobre la vista que devuelva manu_code, manu_name, cant_producto y si el campo ult_fecha_orden posee un NULL informar ‘No Posee Órdenes’ si no posee NULL informar el valor de dicho campo.  No se puede utilizar UNION para el SELECT.
+- Realizar una consulta sobre la vista que devuelva manu_code, manu_name, cant_producto y si el campo ult_fecha_orden posee un NULL informar ‘No Posee Órdenes’ si no posee NULL informar el valor de dicho campo. No se puede utilizar UNION para el SELECT.
 
 ```sql
 ```
