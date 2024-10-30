@@ -13,4 +13,4 @@ Este repositorio contiene la práctica realizada para la asignatura Gestión de 
 - Clase 9: [***Triggers II***](<practicas-resueltas/practica-clase-09.md>)
 - Clase 10: [***Queries complejos I***](<practicas-resueltas/practica-clase-10.md>)
 - Clase 11: [***Queries complejos II***](<practicas-resueltas/practica-clase-11.md>)
-- Clase 12: [***Queries complejos III, Queries Recursivo y CTEs***](<practicas-resueltas/practica-clase-12.md>)
+- Clase 12: [***Queries complejos III***](<practicas-resueltas/practica-clase-12.md>)
