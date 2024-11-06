@@ -14,3 +14,6 @@ Este repositorio contiene la práctica realizada para la asignatura Gestión de 
 - Clase 10: [***Queries complejos I***](<practicas-resueltas/practica-clase-10.md>)
 - Clase 11: [***Queries complejos II***](<practicas-resueltas/practica-clase-11.md>)
 - Clase 12: [***Queries complejos III***](<practicas-resueltas/practica-clase-12.md>)
+- Clase 13: [***Simulacro de parcial I***](<practicas-resueltas/practica-clase-13.md>)
+- Clase 14: [***Simulacro de parcial II***](<practicas-resueltas/practica-clase-14.md>)
+- Clase 15: [***Simulacro de parcial III***](<practicas-resueltas/practica-clase-15.md>)
