@@ -21,3 +21,6 @@ Este repositorio contiene la práctica realizada para la asignatura Gestión de 
 - Modelo de parcial 02: [***Simulacro en clase II***](<simulacros-parcial/simulacro-02.md>)
 - Modelo de parcial 03: [***Simulacro en clase III***](<simulacros-parcial/simulacro-03.md>)
 - Modelo de parcial 04: [***Simulacro recomendado I***](<simulacros-parcial/simulacro-04.md>)
+- Modelo de parcial 04: [***Simulacro recomendado II***](<simulacros-parcial/simulacro-05.md>)
+- Modelo de parcial 04: [***Simulacro recomendado III***](<simulacros-parcial/simulacro-06.md>)
+- Modelo de parcial 04: [***Simulacro recomendado IV***](<simulacros-parcial/simulacro-07.md>)
