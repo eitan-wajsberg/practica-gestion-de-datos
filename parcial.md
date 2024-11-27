@@ -1,4 +1,6 @@
 ```sql
+-- PUNTO 3 - QUERY
+
 SELECT s.state, s.sname, c1.customer_num, c1.lname + ', ' + c1.fname nombre_cliente, SUM(i1.quantity * i1.unit_price) monto_total_comprado
 FROM customer c1 
     INNER JOIN state s ON s.state = c1.state
@@ -18,6 +20,8 @@ ORDER BY s.state ASC;
 ```
 
 ```sql 
+-- PUNTO 4 - TRIGGER
+
 CREATE TABLE listaPreciosHist (
     id SMALLINT PRIMARY KEY IDENTITY(1, 1),
     stock_num SMALLINT NOT NULL,
@@ -31,14 +35,21 @@ CREATE TABLE listaPreciosHist (
 CREATE TRIGGER registrarCambiosPrecio ON products
 AFTER INSERT, UPDATE AS
 BEGIN
-    INSERT INTO listaPrecioHist (stock_num, manu_code, fecha_modif, precio_anterior, precio_nuevo)
+    INSERT INTO listaPreciosHist (stock_num, manu_code, fecha_modif, precio_anterior, precio_nuevo)
     SELECT i.stock_num, i.manu_code, GETDATE(), d.unit_price, i.unit_price
     FROM inserted i INNER JOIN deleted d ON i.stock_num = d.stock_num AND i.manu_code = d.manu_code;
 END
+
+/* 
+    Como los triggers ya manejan transacciones intrinsectamente no utilizo transacciones. Tampoco considere usar
+    un cursor, ya que fue posible cargar masivamente el cambio de precio mediante un INSERT-SELECT.
+*/
 ```
 
 
 ```sql
+-- PUNTO 5 - PROCEDURE
+
 CREATE TABLE historiaPrecios (
     id SMALLINT PRIMARY KEY IDENTITY(1, 1),
     stock_num SMALLINT NOT NULL,
@@ -52,27 +63,26 @@ CREATE TABLE historiaPrecios (
 
 CREATE PROCEDURE aumentaPreciosPR (@manuCode CHAR(3), @porcentajeAumento DECIMAL(3, 2)) AS
 BEGIN
+    IF @porcentajeAumento <= 0
+        THROW 50000, 'No se puede utilizar un porcentaje de aumento negativo o igual a cero.', 1
+
     DECLARE @stockNum SMALLINT;
-    DECLARE @fechaModificacion DATETIME;
+    DECLARE @fechaModificacion DATETIME = GETDATE();
     DECLARE @unitPriceAnterior DECIMAL(6, 2);
     DECLARE @unitPriceNuevo DECIMAL(6, 2);
 
     DECLARE cursorProductos CURSOR FOR
-        SELECT stock_num, manu_code, GETDATE(), unit_price 
+        SELECT stock_num, unit_price 
         FROM products 
         WHERE manu_code = @manuCode
 
     BEGIN TRANSACTION
         OPEN cursorProductos;
-        FETCH cursorProductos INTO @stockNum, @fechaModificacion, @unitPriceAnterior;
+        FETCH cursorProductos INTO @stockNum, @unitPriceAnterior;
 
         BEGIN TRY
             WHILE @@FETCH_STATUS = 0 
             BEGIN
-                IF NOT EXISTS (SELECT 1 FROM products WHERE stock_num = @stockNum)
-                    THROW 50000, 'No existe un producto con ese stock_num.', 1;
-                    
-           
                 SET @unitPriceNuevo = @unitPriceAnterior * @porcentajeAumento;
                 UPDATE products SET unit_price = @unitPriceNuevo
                 WHERE stock_num = @stockNum AND manu_code = @manuCode;
@@ -80,14 +90,17 @@ BEGIN
                 INSERT INTO historiaPrecios (stock_num, manu_code, fecha_modificacion, porcentaje_aumento, precio_anterior, precio_nuevo)
                 VALUES (@stockNum, @manuCode, @fechaModificacion, @porcentajeAumento, @unitPriceAnterior, @unitPriceNuevo);
 
-                FETCH cursorProductos INTO @stockNum, @fechaModificacion, @unitPriceAnterior;
+                FETCH cursorProductos INTO @stockNum, @unitPriceAnterior;
             END
+            COMMIT;
         END TRY
-
         BEGIN CATCH
             ROLLBACK;
-            PRINT 'Mensaje error: ' + CAST(ERROR_MESSAGE() AS VARCHAR(255));
+            PRINT 'Numero error: ' + CAST(ERROR_NUMBER() AS VARCHAR);
+			PRINT 'Mensaje: ' + ERROR_MESSAGE();
         END CATCH
-    COMMIT;
+
+	CLOSE cursorProductos;
+	DEALLOCATE cursorProductos;
 END
 ```
