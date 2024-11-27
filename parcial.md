@@ -1,16 +1,20 @@
 ```sql
-SELECT s.state, s.sname, sub.customer_num, sub.nombre_cliente, sub.monto_total_comprado
-FROM state s INNER JOIN (
-        SELECT TOP 1 c.state, c.customer_num, c.lname + ', ' + c.fname nombre_cliente, SUM(i.quantity * i.unit_price) monto_total_comprado
-        FROM customer c
-            INNER JOIN orders o ON o.customer_num = c.customer_num
-            INNER JOIN items i ON i.order_num = o.order_num
-        WHERE o.order_date > '2015-06-01'
-        GROUP BY c.state, c.customer_num, c.lname + ', ' + c.fname
-        ORDER BY monto_total_comprado
-    ) sub ON s.state = sub.state  
-GROUP BY s.state, s.sname, sub.customer_num, sub.nombre_cliente, sub.monto_total_comprado
-ORDER BY s.state;
+SELECT s.state, s.sname, c1.customer_num, c1.lname + ', ' + c1.fname nombre_cliente, SUM(i1.quantity * i1.unit_price) monto_total_comprado
+FROM customer c1 
+    INNER JOIN state s ON s.state = c1.state
+    INNER JOIN orders o1 ON o1.customer_num = c1.customer_num
+    INNER JOIN items i1 ON i1.order_num = o1.order_num 
+WHERE c1.customer_num IN (
+    SELECT TOP 1 c2.customer_num
+    FROM customer c2
+        INNER JOIN orders o2 ON o2.customer_num = c2.customer_num
+        INNER JOIN items i2 ON i2.order_num = o2.order_num 
+    WHERE o2.order_date > '2015-06-01' AND s.state = c2.state 
+    GROUP BY c2.customer_num
+    ORDER BY SUM(i2.quantity * i2.unit_price) DESC
+) AND o1.order_date > '2015-06-01'
+GROUP BY s.state, s.sname, c1.customer_num, c1.lname + ', ' + c1.fname
+ORDER BY s.state ASC;
 ```
 
 ```sql 
