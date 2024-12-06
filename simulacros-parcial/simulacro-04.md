@@ -59,12 +59,6 @@ WHERE c1.state IN (
 ) AND i1.quantity * i1.unit_price > 85
 GROUP BY c1.state, c1.customer_num, c1.fname, c1.lname
 ORDER BY monto_facturado_estado DESC, monto_facturado_cliente DESC;
-
-/*
-    Atento:
-        - Te pedia el promedio orden de compra del cliente en especifico no de todos.
-        - Mi solucion y la del resuelto discrepan, ya que yo considero que: "Para el cálculo de lo facturado solamente tener en cuenta aquellas líneas de ítems que hayan facturado mas de $85" se refiere a un renglon especifico de la orden, no a la sumatoria de la orden por completo. En el resuelto el filtro lo ponen en el HAVING ya que consideran que se refiere a la sumatoria de cantidades por producto en una orden. 
-*/
 ```
 
 

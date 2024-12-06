@@ -52,12 +52,6 @@ WHERE c1.customer_num IN (
 )
 GROUP BY c1.state, c1.customer_num, c1.lname + ', ' + c1.fname
 ORDER BY c1.state, monto_total DESC;
-
-/*
-    Atento:
-      - Habias hecho la consulta menos performante ya que metiste un LEFT JOIN con una subconsulta que no era necesaria.
-      - Te habias olvidado de aclarar en el ORDER BY mas importante (el que esta dentro de la subquery) que era DESC. 
-*/ 
 ```
 
 ## Parte 2 - Stored Procedures y Triggers
@@ -115,14 +109,6 @@ BEGIN
     CLOSE cursorDeprecados;
     DEALLOCATE cursorDeprecados;
 END
-
-/*
-    Atento:
-      - Te olvidaste de tratar como errores al "No existe el producto" y al "Producto con ventas" y por ende no se le iba a mostrar el mismo.
-      - Acordate que el RAISERROR y el THROW funcionan igual en el TRY, pero en el CATCH no. En el CATCH:
-        - El RAISERROR permite personalizar mensajes, pero no detiene la ejecución automáticamente.
-        - El THROW lanza el error y detiene la ejecución de inmediato.
-*/ 
 ```
 
 ### Ejercicio E
@@ -173,24 +159,4 @@ BEGIN
         GETDATE(), unit_price
     FROM deleted d
 END
-
-/*
-    Atento!!!!!
-      - Habias puesto AFTER INSERT en lugar de AFTER UPDATE. Atento a estas cosas que son basicas y suman muchos puntos. Un 70% del ejercicio es definir bien eso.
-      - Habias metido una transaccion dentro del TRIGGER, eso esta muy mal, los triggers ya manejan transacciones intrinsecamente.
-      - Habias sacado los datos de INSERTED, pero los datos eran pertenecientes a DELETED, ya que es el anterior el que se guarda en el historial.
-
-    Lo que habias puesto antes dentro del while tambien era posible:
-    
-        IF EXISTS (SELECT 1 FROM precios_hist WHERE stock_num = @stockNum AND manu_code = @manuCode)
-                SET @fechaDesde = '2000-01-01'
-            ELSE 
-                SET @fechaDesde = (
-                        SELECT MAX(fecha_hasta) 
-                        FROM precios_hist 
-                        WHERE stock_num = @stockNum AND manu_code = @manuCode
-                )
-        
-        INSERT INTO precios_hist VALUES (@stockNum, @manuCode, @fechaDesde, @fechaHasta, @unitPrice)`
-*/ 
 ```

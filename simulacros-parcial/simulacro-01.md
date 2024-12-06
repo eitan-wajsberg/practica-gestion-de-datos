@@ -72,14 +72,6 @@ FROM customer c1
     ) s ON c1.customer_num_referedBy = s.customer_num AND i1.stock_num = s.stock_num
 GROUP BY pt.description, c1.fname, c1.lname, s.fname, s.lname, s.monto_total
 ORDER BY pt.description, c1.fname, c1.lname; 
-
-/* Atento: 
-    1. Te habias olvidado del ORDER BY
-    2. Te olvidaste de asegurar en el LEFT JOIN que se tratase del mismo producto (stock) que estaba tomando en cuenta el customer (c1).
-    3. Un error bastante comun que NO COMETISTE es no hacer la consulta con un subquery en el LEFT JOIN. Hacerlo sin la subquery nos llevaria a que si un customer tiene un referido que en la orden en cuestion tenga mas de un item:
-        - Al realizar el SUM en la consulta para referido sera correcto.
-        - Al realizar el SUM en la consulta para el referente no sera correcto, ya que se multiplicaria el total del referente por la cantidad de items que tiene el referido en ese producto.
-*/
 ```
 
 ## Parte 2 - Stored Procedures y Triggers
@@ -142,12 +134,6 @@ BEGIN
     CLOSE cursorNovedades;
     DEALLOCATE cursorNovedades;
 END
-
-/* Atento: 
-    1. Te falto poner en el WHERE del tercer IF: que el manu_code coincida con el del cursor.
-    2. Te falto el WHERE en el UPDATE, es decir que a todos los productos le estabas setteando ese unit price.
-    3. ACLARACION: El orden del BEGIN TRANSACTION y el BEGIN TRY da igual, funciona de ambas formas, de todas maneras al profesor le gusta mas poner el BEGIN TRANSACTION antes que el TRY, ya que la transaccion no solo esta conformada por el TRY sino que tambien el CATCH la conforma (encargandose de hacer ROLLBACK si corresponde).
-*/
 ```
 
 ### Ejercicio E
@@ -197,11 +183,4 @@ BEGIN
     CLOSE cursorCalls;
     DEALLOCATE cursorCalls; 
 END
-
-/* Atento: 
-    1. Pusiste "AFTER UPDATE AS" en lugar de "AFTER INSERT, UPDATE AS"
-    2. Hiciste un JOIN en lugar de un UNION y por ende la solucion realizaba lo esperado.
-    3. Repetias consultas asi que era poco performante.
-    4. Aclaracion: tambien era posible resolverlo con dos cursores uno para los datos en la tabla inserted y otro para los datos en la tabla deleted.
-*/
 ```

@@ -64,9 +64,6 @@ FROM customer c1
 GROUP BY s.fname, s.lname, c1.fname, c1.lname, s.promedio_oc_referido
 HAVING SUM(i1.quantity * i1.unit_price) / COUNT(DISTINCT o1.order_num) < s.promedio_oc_referido
 ORDER BY s.fname, s.lname;
-
-
--- Genial, hiciste bien la consulta!
 ```
 
 ## Parte 2 - Stored Procedures y Triggers
@@ -139,13 +136,6 @@ BEGIN
     CLOSE cursorAuditoriaFabricante
     DEALLOCATE cursorAuditoriaFabricante
 END
-
-/*
-    Atento:
-        1. No manejaste bien la fecha en el cursor.
-        2. Esto "Por cualquier motivo haya un error, se deberá cancelar la operación completa e informar el mensaje de error" indica que es una transaccion para todo procedure no una transaccion para cada registro.
-        3. Te olvidaste de cerrar y deallocar el cursor.
-*/
 ```
 
 ## Ejercicio E
@@ -201,11 +191,5 @@ END;
 
 -- Como los triggers ya implementan transacciones no es necesario manejarlas dentro del mismo. 
 -- Por ende, una vez que ocurre un error esta garantizado que se hara un rollback de las operaciones
--- hechas hasta el momento. 
-
-/*
-    Atento:
-        1. No hiciste bien el conteo de la cantidad de ordenes del cliente, ya que lo estabas sacando de
-           la tabla deleted y ademas no estas filtrando por las que no estabas dadas de baja.
-*/
+-- hechas hasta el momento.
 ```
