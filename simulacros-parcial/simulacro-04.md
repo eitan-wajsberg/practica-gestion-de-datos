@@ -1,6 +1,6 @@
 # Simulacro - 4 (Parcial 26/11/2020)
 
-Simulacro realizado el día 24 de Noviembre del 2024 con el fin prepararme para el parcial de Gestión de Datos.
+Simulacro realizado el día 24 de Noviembre del 2024 para el parcial de Gestión de Datos.
 
 ## Parte 1 - Teoria y SQL
 

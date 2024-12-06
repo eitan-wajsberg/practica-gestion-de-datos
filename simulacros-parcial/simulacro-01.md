@@ -1,6 +1,6 @@
 # Simulacro - 1
 
-Simulacro realizada el día 06 de Noviembre del 2024 para la decimo tercera clase de Gestión de Datos.
+Simulacro realizado el día 06 de Noviembre del 2024 para la decimo tercera clase de Gestión de Datos.
 
 ## Parte 1 - Teoria y SQL
 

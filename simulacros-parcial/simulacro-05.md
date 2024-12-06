@@ -1,6 +1,6 @@
-# Simulacro - 3 (Parcial 14/07/2019)
+# Simulacro - 5 (Parcial 14/07/2019)
 
-Simulacro realizado el día 20 de Noviembre del 2024 para la decimo cuarta clase de Gestión de Datos.
+Simulacro realizado el día 24 de Noviembre del 2024 para el parcial de Gestión de Datos.
 
 ## Parte 1 - Teoria y SQL
 
