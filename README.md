@@ -1,5 +1,5 @@
 # Práctica de Gestión de Datos
-Este repositorio contiene la práctica realizada para la asignatura Gestión de Datos de la Universidad Tecnológica Nacional (UTN FRBA) en el segundo cuatrimestro del año 2024.
+Este repositorio contiene la práctica realizada en clase y simulacros de parcial de la asignatura Gestión de Datos de la Universidad Tecnológica Nacional (UTN FRBA) en el segundo cuatrimestro del año 2024.
 
 ## Practicas resueltas
 - Clase 01: [***Algebra relacional***](<practicas-resueltas/practica-clase-01.md>)
@@ -22,5 +22,8 @@ Este repositorio contiene la práctica realizada para la asignatura Gestión de 
 - Modelo de parcial 03: [***Simulacro en clase III***](<simulacros-parcial/simulacro-03.md>)
 - Modelo de parcial 04: [***Simulacro recomendado I***](<simulacros-parcial/simulacro-04.md>)
 - Modelo de parcial 05: [***Simulacro recomendado II***](<simulacros-parcial/simulacro-05.md>)
-- Modelo de parcial 06: [***Simulacro recomendado III***](<simulacros-parcial/simulacro-06.md>)
-- Modelo de parcial 07: [***Simulacro recomendado IV***](<simulacros-parcial/simulacro-07.md>)
+
+
+## Parcial Practico 2C resuelto
+
+Parcial del 27 de Noviembre del 2024 [aquí](<parcial-27-11-2024.md>)
